@@ -1,0 +1,50 @@
+MPLINK 4.31, Linker
+Linker Map File - Created Thu Oct 26 19:28:54 2023
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000092
+                   .cinit    romdata   0x000049    program   0x000004
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00004a      
+            75 out of 2183 program addresses used, program memory utilization is 3%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+             AbrirCanilla   0x00003b    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+              ApagarTermo   0x000043    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+                    Bomba   0x00002a    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+              ChequeoAgua   0x000024    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+                   Inicio   0x000000    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+       PrenderResistencia   0x000035    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+             PrenderTermo   0x000023    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+          RetardoMedioSeg   0x000004    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+             RutinaConfig   0x000011    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+            VerificarTemp   0x00002d    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   Inicio   0x000000    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+          RetardoMedioSeg   0x000004    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+             RutinaConfig   0x000011    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+             PrenderTermo   0x000023    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+              ChequeoAgua   0x000024    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+                    Bomba   0x00002a    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+            VerificarTemp   0x00002d    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+       PrenderResistencia   0x000035    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+             AbrirCanilla   0x00003b    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+              ApagarTermo   0x000043    program     static C:\Users\Lauti\Desktop\facultad\arq comp\TP_FINAL_ARQ\TpTermo.asm
+
+

@@ -1,0 +1,380 @@
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;*****************************************************************************
+                      00002 ; TP FINAL - PUNTO 1
+                      00003 ; PROGRAMA CONTROLAR TEMPERATURA TERMOTANQUE
+                      00004 ;*****************************************************************************
+                      00005 
+                      00006 #include <p16f628a.inc>
+                      00001         LIST
+                      00002 ; P16F628A.INC  Standard Header File, Version 1.10    Microchip Technology, Inc.
+                      00265         LIST
+                      00266 
+                      00007 
+  00000020            00008 Delay1 EQU 0x20 ; 
+  00000021            00009 Delay2 EQU 0x21 ; 3 registros utilizados para controlar retardos
+  00000022            00010 Delay3 EQU 0x22 ;
+                      00011 
+  00000000            00012 LedBomba                        EQU 0 ; 
+  00000001            00013 LedTempAgua                     EQU 1 ; Creamos 4 leds para controlar diferentes caracteristicas del ter
+                            mo
+  00000002            00014 LedResistenciaOn        EQU 2 ; 
+  00000003            00015 LedResistenciaOff       EQU 3 ; 
+  00000004            00016 LedTermo                        EQU 4 ;
+                      00017 
+  00000023            00018 TempMax         EQU     0x23 ; 
+  00000024            00019 TempMin         EQU 0x24 ; 3 registros para controlar las temperaturas
+  00000025            00020 TempAgua        EQU 0x25 ; 
+  00000026            00021 Litros          EQU 0x26 ; Registro para controlar los litros del termo
+  00000027            00022 LitrosMax       EQU 0x27 ; Registro que contiene el maximo de litros
+  00000028            00023 LitrosMin       EQU     0x28 ; Registro que contiene el minimo de litros
+                      00024                 org 0
+0000                  00025 Inicio:
+0000   1683           00026     bsf     STATUS,RP0          ; Selecciono el banco 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0001   0186           00027     clrf    TRISB               ; Definimos trisb como salida
+0002   1283           00028     bcf     STATUS,RP0          ; De vuelta al banco 0
+0003   2???           00029         goto    RutinaConfig    ; Nos dirigimos a la RutinaConfig para evitar el retardo
+                      00030 
+0004                  00031 RetardoMedioSeg:                                        ; Se genera un subrutina que genera un retardo d
+                            e medio segundo 
+0004   0BA0           00032         decfsz  Delay1,f                        ; Decremento Delay1 hasta llegar a cero
+0005   2???           00033     goto    RetardoMedioSeg             ; Cada loop toma 3 ciclos de maquina * 127 loops= 381 instruccio
+                            nes
+0006   307F           00034         movlw   d'127'            
+0007   00A0           00035         movwf   Delay1                                  ; Se vuelve a cargar Delay1 con 127
+0008   0BA1           00036         decfsz  Delay2,f                        ; Delay2 decrementara su valor en 1 cada vez que Delay1 
+                            llegue a 0
+0009   2???           00037         goto    RetardoMedioSeg         
+000A   30BA           00038         movlw   d'186'
+000B   00A1           00039         movwf   Delay2                                  ; Se vuelve a cargar Delay2 con 186
+000C   0BA2           00040         decfsz  Delay3,f        
+000D   2???           00041         goto    RetardoMedioSeg
+000E   3007           00042         movlw   d'7'
+000F   00A2           00043         movwf   Delay3                                  ; Se vuelve a cargar Delay3 con 7
+                      00044                                                                         ; {[(3*127+1)*186+3*186+1]*7+3*7
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            +1} * 1uS = 501.299uS (Medio segundo aprox)
+0010   0008           00045         return
+                      00046 
+0011                  00047 RutinaConfig:
+0011   306E           00048         movlw   d'110'          ; 
+0012   00A7           00049         movwf   LitrosMax       ; 
+0013   3000           00050         movlw   d'0'            ; 
+0014   00A6           00051         movwf   Litros          ;
+0015   3032           00052         movlw   d'50'           ;
+0016   00A8           00053         movwf   LitrosMin       ;
+0017   3014           00054         movlw   d'20'           ; Hacemos la carga de todos los registros (LitrosMax, LitrosMin, Litros,
+                             TempMax, TempMin, y TempAgua)
+0018   00A4           00055         movwf   TempMin         ;
+0019   302D           00056         movlw   d'45'           ;
+001A   00A3           00057         movwf   TempMax         ;
+001B   3015           00058         movlw   d'21'           ;
+001C   00A5           00059         movwf   TempAgua        ;
+001D   307F           00060         movlw   d'127'          ;         
+001E   00A0           00061         movwf   Delay1          ; 
+001F   30BA           00062         movlw   d'186'          ; 
+0020   00A1           00063         movwf   Delay2          ; Valores necesarios en los Delay para generar un retardo de medio segun
+                            do 
+0021   3007           00064         movlw   d'7'            ; 
+0022   00A2           00065         movwf   Delay3          ; 
+0023                  00066 PrenderTermo:
+0023   1606           00067         bsf             PORTB,LedTermo  ; Prendemos el led que indica que el termo esta prendido
+                      00068 
+0024                  00069 ChequeoAgua:
+0024   0826           00070         movf    Litros, W               ; Mueve el contenido de Litros a W
+0025   0227           00071         subwf   LitrosMax, W    ; Substrae W de LitrosMax y almacena el resultado en W
+0026   1903           00072         btfsc   STATUS, Z               ; Chequeo del bit Z del STATUS para saber el resultado de la res
+                            ta
+0027   2???           00073         goto    VerificarTemp   ; Si la resta da 0 (Z = 1) salta a la rutina del chequeo de la temperatu
+                            ra
+0028   2???           00074         call    Bomba                   ; Si la resta no da 0 (Z = 0) ejecuta la subrutina Bomba
+0029   2???           00075         goto    ChequeoAgua             ; Una vez que termina la subrutina bomba vuelve a chequear los l
+                            itros
+                      00076 
+002A                  00077 Bomba:                                          ; Esta subrutina aumentara en 1, con cada aumento volver
+                            a a comparar los litros y se ejecutara
+                      00078                                                         ; hasta alcanzar los 110 litros
+002A   1406           00079         bsf             PORTB,LedBomba  ; Prendemos el led que especifica la carga de agua
+002B   0AA6           00080         incf    Litros, F               ; Incrementamos el valor de Litros en 1
+002C   0008           00081         return                                  ; Vuelve a comparar la cantidad de litros
+                      00082 
+002D                  00083 VerificarTemp:
+002D   1006           00084         bcf             PORTB,LedBomba          ; Apagamos el led de la carga de agua
+002E   1486           00085         bsf             PORTB,LedTempAgua       ; Prendemos el led de chequeo de temperatura
+002F   0825           00086         movf    TempAgua, W                     ; Se mueve el contendio de TempAgua al registro W
+0030   0223           00087         subwf   TempMax, W                      ; Se substrae TempMax del registro W
+0031   1903           00088         btfsc   STATUS, Z                       ; Idem linea 49
+0032   2???           00089         goto    AbrirCanilla            
+0033   2???           00090         call    PrenderResistencia      
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0034   2???           00091         goto    VerificarTemp
+                      00092 
+0035                  00093 PrenderResistencia:
+0035   1506           00094         bsf             PORTB,LedResistenciaOn  ; Se prende el led que indica que la resistencia esta an
+                            dando
+0036   2???           00095         call    RetardoMedioSeg                 ; Llamamos al retardo
+0037   1106           00096         bcf             PORTB,LedResistenciaOn  ; Se apaga el led de la resistencia
+0038   2???           00097         call    RetardoMedioSeg
+                      00098                                                                         ; Al igual que la bomba esta sub
+                            rutina incrementa la temperatura hasta llegar a la temperatura maxima
+0039   0AA5           00099         incf    TempAgua, f                             ; Se incrementa TempAgua en 1
+003A   0008           00100         return                                                  ; Se vuelve a verificar la temperatura
+                      00101 
+003B                  00102 AbrirCanilla:
+003B   1086           00103         bcf             PORTB,LedTempAgua               ; Apagamos el led de chequeo de temperatura
+003C   1586           00104         bsf             PORTB,LedResistenciaOff ; Se prende el led que indica que se apago la resistenci
+                            a (El agua ya llego a la temperatura maxima)
+003D   0826           00105         movf    Litros, W
+003E   0228           00106         subwf   LitrosMin, W
+003F   1903           00107         btfsc   STATUS, Z
+0040   2???           00108         goto    ApagarTermo
+0041   03A6           00109         decf    Litros, F                               ; Se reduce en 1 el registro Litros
+0042   2???           00110         goto    AbrirCanilla
+                      00111 
+                      00112 
+0043                  00113 ApagarTermo:
+0043   1186           00114         bcf             PORTB,LedResistenciaOff ; Apagamos el led que indica que se alcanzo la temp maxi
+                            ma
+0044   1206           00115         bcf             PORTB,LedTermo                  ; Apagamos el led que indica que el termo esta p
+                            rendido
+0045   301C           00116         movlw   d'28'                           
+0046   00A2           00117         movwf   Delay3                                  ; Cargamos el Delay3 con 28 para que el retardo 
+                            de medio segundo pase a ser uno de dos segundos
+                      00118                                                                         ; {[(3*127+1)*186+3*186+1]*28+3*
+                            28+1} * 1uS = 2.005.193uS (Dos segundos aprox)
+0047   2???           00119         call    RetardoMedioSeg
+0048   2???           00120         goto    RutinaConfig                    ; Volvemos a empezar
+                      00121 
+                      00122         end
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+AbrirCanilla                      0000003B
+ApagarTermo                       00000043
+BRGH                              00000002
+Bomba                             0000002A
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+ChequeoAgua                       00000024
+DC                                00000001
+Delay1                            00000020
+Delay2                            00000021
+Delay3                            00000022
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+Inicio                            00000000
+LedBomba                          00000000
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+LedResistenciaOff                 00000003
+LedResistenciaOn                  00000002
+LedTempAgua                       00000001
+LedTermo                          00000004
+Litros                            00000026
+LitrosMax                         00000027
+LitrosMin                         00000028
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PrenderResistencia                00000035
+PrenderTermo                      00000023
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+RetardoMedioSeg                   00000004
+RutinaConfig                      00000011
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+TempAgua                          00000025
+TempMax                           00000023
+TempMin                           00000024
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+VerificarTemp                     0000002D
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+MPASM  5.31                       TPTERMO.ASM   10-26-2023  19:28:53         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+__DEBUG                           1
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     1 reported,     0 suppressed
+
+
